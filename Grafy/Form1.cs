@@ -13,8 +13,13 @@ namespace Grafy
             private Point positionUp;
         private int poc = 0;
 
+        private double horneD;
+        private double dolneD;
+        private ToolTip tool;
+
         public Form1()
         {
+            tool = new ToolTip();
             InitializeComponent();
         }
 
@@ -62,14 +67,13 @@ namespace Grafy
             for (int i = 0; i < 100; i++)
             {
                 series1.Points.AddXY(i, f(i)+12000, f(i) - 15000, f(i) + 7000, f(i) - 7000);
-              //  series2.Points.AddXY(i, f(i));
             }
-
-            //series2.Points.AddXY(10, 50000);
-            //series2.Points.AddXY(21, 60000);
-            //series2.Points.AddXY(25, 20000);
-
             chart1.Invalidate();
+
+            chart1.ChartAreas[0].CursorX.IsUserEnabled = true;
+            chart1.ChartAreas[0].CursorY.IsUserEnabled = true;
+            chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+            chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
         }
 
         private void chart1_Click(object sender, EventArgs e)
@@ -83,57 +87,121 @@ namespace Grafy
 
         private void chart1_MouseDown(object sender, MouseEventArgs e)
         {
-            poc = 1;
-            Console.WriteLine(positionDown);
-            positionDown = MousePosition;
 
-            chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new Point(e.X, e.Y), true);
-            chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new Point(e.X, e.Y), true);
-
-            double pX = chart1.ChartAreas[0].CursorX.Position; //X Axis Coordinate of your mouse cursor
-            double pY = chart1.ChartAreas[0].CursorY.Position; //Y Axis Coordinate of your mouse cursor
-            var zacSur = pY.ToString();
-
-            if (chart1.Series[2].Points.Count > 0)
+            if (checkBox1.Checked)
             {
-                chart1.Series[2].Points.Clear();
-            }
 
-            chart1.Series[2].Points.AddXY(pX, pY);
-            chart1.Series[2].Points.First().Label = zacSur;
-            chart1.Invalidate();
-        }
-
-        private void chart1_MouseUp_1(object sender, MouseEventArgs e)
-        {
-            Console.WriteLine("koncova - "+positionUp);
-            positionUp = MousePosition;
-            poc = 0;
-        }
-
-        private void chart1_MouseMove(object sender, MouseEventArgs e)
-        {
-            chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new Point(e.X, e.Y), true);
-            chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new Point(e.X, e.Y), true);
-            if (poc == 1)
-            {
-                positionUp = chart1.PointToScreen(MousePosition);
+                poc = 1;
+                positionDown = MousePosition;
 
                 chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new Point(e.X, e.Y), true);
                 chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new Point(e.X, e.Y), true);
 
                 double pX = chart1.ChartAreas[0].CursorX.Position; //X Axis Coordinate of your mouse cursor
                 double pY = chart1.ChartAreas[0].CursorY.Position; //Y Axis Coordinate of your mouse cursor
-                //Console.WriteLine("priebezna - " + pX + " : " + pY);
-                Console.WriteLine("Poc pred "+chart1.Series[2].Points.Count);
-                if (chart1.Series[2].Points.Count == 2)
+                var zacSur = pY.ToString();
+
+                if (chart1.Series[2].Points.Count > 0)
                 {
-                    chart1.Series[2].Points.RemoveAt(1);
+                    chart1.Series[2].Points.Clear();
                 }
+
                 chart1.Series[2].Points.AddXY(pX, pY);
-                chart1.Series[2].Points.Last().Label = pY.ToString();
-                Console.WriteLine("Poc po " + chart1.Series[2].Points.Count);
+                chart1.Series[2].Points.First().Label = zacSur;
+                horneD = pY;
                 chart1.Invalidate();
+            }
+            else
+            {
+            }
+        }
+
+        private void chart1_MouseUp_1(object sender, MouseEventArgs e)
+        {
+            //Console.WriteLine("koncova - "+positionUp);
+            if (checkBox1.Checked)
+            {
+                positionUp = MousePosition;
+                poc = 0;
+            }
+        }
+
+        private void chart1_MouseMove(object sender, MouseEventArgs e)
+        {
+            
+            tool.RemoveAll();
+            chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new Point(e.X, e.Y), true);
+            chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new Point(e.X, e.Y), true);
+            double pX = chart1.ChartAreas[0].CursorX.Position; //X Axis Coordinate of your mouse cursor
+            double pY = chart1.ChartAreas[0].CursorY.Position; //Y Axis Coordinate of your mouse cursor
+
+            if (checkBox1.Checked)
+            {
+                if (poc == 1)
+                {
+                    positionUp = chart1.PointToScreen(MousePosition);
+
+                    chart1.ChartAreas[0].CursorX.SetCursorPixelPosition(new Point(e.X, e.Y), true);
+                    chart1.ChartAreas[0].CursorY.SetCursorPixelPosition(new Point(e.X, e.Y), true);
+
+                    
+                    if (chart1.Series[2].Points.Count == 2)
+                    {
+                        chart1.Series[2].Points.RemoveAt(1);
+                    }
+                    chart1.Series[2].Points.AddXY(pX, pY);
+                    chart1.Series[2].Points.Last().Label = pY.ToString();
+                    dolneD = pY;
+                    label1.Text = pocitajCenu();
+
+                 //   chart1.Series[1].valueX.Text = diagramCoordinates.DateTimeArgument.ToShortDateString();
+                 //   chart1.valueY.Text = "$" + Math.Round(seriesValue);
+                //    chart1.ChartAreas[0].AxisX. = true;
+                    
+                    chart1.Invalidate();
+                }
+            }
+
+            //    tool.Show(pY.ToString(), this.chart1, new Point(chart1.Location.X + chart1.Width-130, e.Y));
+            
+            label2.Text = pY.ToString();
+            label3.Text = pX.ToString();
+            chart1.Invalidate();
+        }
+
+        private string pocitajCenu()
+        {
+            if (horneD > dolneD)
+                return ((horneD - dolneD)*5).ToString("N2");
+
+            return ((dolneD - horneD) * 5).ToString("C2");
+        }
+
+        private void chart1_MouseWheel(object sender, MouseEventArgs e)
+        {
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            chart1.ChartAreas[0].AxisX.ScaleView.ZoomReset();
+            chart1.ChartAreas[0].AxisY.ScaleView.ZoomReset();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                chart1.ChartAreas[0].CursorX.IsUserEnabled = false;
+                chart1.ChartAreas[0].CursorY.IsUserEnabled = false;
+                chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = false;
+                chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = false;
+            }
+            else
+            {
+                chart1.ChartAreas[0].CursorX.IsUserEnabled = true;
+                chart1.ChartAreas[0].CursorY.IsUserEnabled = true;
+                chart1.ChartAreas[0].CursorX.IsUserSelectionEnabled = true;
+                chart1.ChartAreas[0].CursorY.IsUserSelectionEnabled = true;
             }
         }
     }
